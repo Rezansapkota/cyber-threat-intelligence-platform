@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Intelligence Platform</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-weight: 700;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #b9c2cf;
+            border-radius: 6px;
+            padding: 10px;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        button {
+            width: fit-content;
+            border: 0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            background: #116466;
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .threat-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .threat {
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 14px;
+            background: #ffffff;
+        }
+
+        .threat h3 {
+            margin: 0 0 8px;
+        }
+
+        .meta {
+            color: #52616f;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .empty {
+            color: #52616f;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Cyber Threat Intelligence Platform</h1>
+            <p>Track threat reports and store them in the Django backend.</p>
+        </header>
+
+        <section class="panel">
+            <h2>Add Threat</h2>
+            <form method="post">
+                {% csrf_token %}
+                <label>
+                    Title
+                    <input type="text" name="title" placeholder="Suspicious phishing campaign" required>
+                </label>
+
+                <label>
+                    Source
+                    <input type="text" name="source" placeholder="SOC analyst, OSINT feed, firewall log">
+                </label>
+
+                <label>
+                    Severity
+                    <select name="severity">
+                        {% for value, label in severity_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Description
+                    <textarea name="description" placeholder="Indicators, affected assets, mitigation notes"></textarea>
+                </label>
+
+                <button type="submit">Save Threat</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Threat Reports</h2>
+            <div class="threat-list">
+                {% for threat in threats %}
+                    <article class="threat">
+                        <h3>{{ threat.title }}</h3>
+                        <div class="meta">
+                            {{ threat.get_severity_display }} severity
+                            {% if threat.source %} from {{ threat.source }}{% endif %}
+                            on {{ threat.created_at|date:"M d, Y H:i" }}
+                        </div>
+                        {% if threat.description %}
+                            <p>{{ threat.description }}</p>
+                        {% endif %}
+                    </article>
+                {% empty %}
+                    <p class="empty">No threats stored yet. Add the first report above.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>
