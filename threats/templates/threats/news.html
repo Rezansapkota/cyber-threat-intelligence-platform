@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity News</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .menu-bar {
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .menu-bar a {
+            border-radius: 6px;
+            color: #17202a;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-decoration: none;
+        }
+
+        .menu-bar a.active,
+        .menu-bar a:hover {
+            background: #116466;
+            color: #ffffff;
+        }
+
+        .menu-bar form {
+            margin-left: auto;
+        }
+
+        .menu-bar button {
+            border: 0;
+            border-radius: 6px;
+            background: #17202a;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 8px 10px;
+        }
+
+        .back-link {
+            color: #116466;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .news-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .news-item {
+            border-bottom: 1px solid #d7dde4;
+            padding-bottom: 12px;
+        }
+
+        .news-item:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .news-item h2 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .news-item a {
+            color: #116466;
+            text-decoration: none;
+        }
+
+        .news-item a:hover {
+            text-decoration: underline;
+        }
+
+        .meta {
+            color: #52616f;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .keyword-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .keyword {
+            border-radius: 999px;
+            padding: 4px 8px;
+            background: #e9f5f5;
+            color: #116466;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .empty {
+            color: #52616f;
+            margin: 0;
+        }
+
+        .notice {
+            background: #fff8e6;
+            border: 1px solid #ebd391;
+            border-radius: 6px;
+            color: #5c4700;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <a class="back-link" href="{% url 'index' %}">Back to Threat Reports</a>
+            <h1>Cybersecurity News</h1>
+            <p>Latest articles collected by the Django backend from free cybersecurity RSS feeds.</p>
+        </header>
+
+        <nav class="menu-bar" aria-label="Dashboard menu">
+            <a href="{% url 'index' %}">Dashboard</a>
+            <a href="{% url 'analytics' %}">Analytics</a>
+            <a class="active" href="{% url 'news' %}">News</a>
+            {% for category in category_links %}
+                <a href="{% url 'category' category.slug %}">{{ category.name }} ({{ category.count }})</a>
+            {% endfor %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </nav>
+
+        <section class="panel">
+            {% if news_error %}
+                <p class="notice">{{ news_error }}</p>
+            {% endif %}
+
+            <div class="news-grid">
+                {% for article in news_articles %}
+                    <article class="news-item">
+                        <h2>
+                            <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                                {{ article.title }}
+                            </a>
+                        </h2>
+                        <div class="meta">
+                            {{ article.source }}
+                            {% if article.published_at %}
+                                on {{ article.published_at|slice:":10" }}
+                            {% endif %}
+                        </div>
+                        {% if article.description %}
+                            <p>{{ article.description }}</p>
+                        {% endif %}
+                        {% if article.keywords %}
+                            <div class="keyword-list">
+                                {% for keyword in article.keywords %}
+                                    <span class="keyword">{{ keyword }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </article>
+                {% empty %}
+                    {% if not news_error %}
+                        <p class="empty">No cybersecurity news found right now.</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

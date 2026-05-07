@@ -13,7 +13,7 @@
         }
 
         main {
-            max-width: 960px;
+            max-width: 1180px;
             margin: 0 auto;
             padding: 32px 20px;
         }
@@ -27,6 +27,41 @@
             font-size: 32px;
         }
 
+        .menu-bar {
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .menu-bar a {
+            border-radius: 6px;
+            color: #17202a;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-decoration: none;
+        }
+
+        .menu-bar a.active,
+        .menu-bar a:hover {
+            background: #116466;
+            color: #ffffff;
+        }
+
+        .menu-bar form {
+            margin-left: auto;
+        }
+
+        .menu-bar button {
+            background: #17202a;
+            padding: 8px 10px;
+        }
+
         .panel {
             background: #ffffff;
             border: 1px solid #d7dde4;
@@ -35,31 +70,42 @@
             margin-bottom: 20px;
         }
 
-        form {
+        .dashboard-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 14px;
+            margin-bottom: 20px;
         }
 
-        label {
+        .metric {
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .metric span {
+            color: #52616f;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 30px;
+        }
+
+        .split-grid {
             display: grid;
-            gap: 6px;
-            font-weight: 700;
+            grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+            gap: 20px;
         }
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #b9c2cf;
-            border-radius: 6px;
-            padding: 10px;
-            font: inherit;
-        }
-
-        textarea {
-            min-height: 96px;
-            resize: vertical;
+        @media (max-width: 820px) {
+            .split-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         button {
@@ -73,20 +119,121 @@
             cursor: pointer;
         }
 
+        .action-link {
+            display: inline-block;
+            border-radius: 6px;
+            padding: 10px 14px;
+            background: #17202a;
+            color: #ffffff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+
+        .filter-button {
+            border: 1px solid #b9c2cf;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #17202a;
+            padding: 8px 12px;
+        }
+
+        .filter-button.active {
+            background: #116466;
+            border-color: #116466;
+            color: #ffffff;
+        }
+
+        .chart {
+            display: grid;
+            gap: 12px;
+        }
+
+        .bar-row {
+            display: grid;
+            gap: 6px;
+        }
+
+        .bar-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .bar-track {
+            background: #edf1f5;
+            border-radius: 999px;
+            height: 14px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: #116466;
+            border-radius: inherit;
+            height: 100%;
+            min-width: 6px;
+        }
+
+        .severity-chart .bar-fill.critical {
+            background: #c53030;
+        }
+
+        .severity-chart .bar-fill.high {
+            background: #c27803;
+        }
+
+        .severity-chart .bar-fill.medium {
+            background: #116466;
+        }
+
         .threat-list {
             display: grid;
             gap: 12px;
         }
 
-        .threat {
+        .threat,
+        .alert {
             border: 1px solid #d7dde4;
             border-radius: 8px;
             padding: 14px;
             background: #ffffff;
         }
 
-        .threat h3 {
+        .threat h3,
+        .alert h3 {
             margin: 0 0 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 4px 8px;
+            background: #e9f5f5;
+            color: #116466;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .critical {
+            background: #fde8e8;
+            color: #9b1c1c;
+        }
+
+        .high {
+            background: #fff3d7;
+            color: #7a4b00;
+        }
+
+        .medium {
+            background: #e9f5f5;
+            color: #116466;
         }
 
         .meta {
@@ -99,67 +246,156 @@
             color: #52616f;
             margin: 0;
         }
+
     </style>
 </head>
 <body>
     <main>
         <header>
             <h1>Cyber Threat Intelligence Platform</h1>
-            <p>Track threat reports and store them in the Django backend.</p>
+            <p>Natural language processing dashboard for cybersecurity news alerts.</p>
         </header>
 
-        <section class="panel">
-            <h2>Add Threat</h2>
-            <form method="post">
+        <nav class="menu-bar" aria-label="Dashboard menu">
+            <a class="active" href="{% url 'index' %}">Dashboard</a>
+            <a href="{% url 'analytics' %}">Analytics</a>
+            <a href="{% url 'news' %}">News</a>
+            {% for category in category_links %}
+                <a href="{% url 'category' category.slug %}">{{ category.name }} ({{ category.count }})</a>
+            {% endfor %}
+            <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <label>
-                    Title
-                    <input type="text" name="title" placeholder="Suspicious phishing campaign" required>
-                </label>
-
-                <label>
-                    Source
-                    <input type="text" name="source" placeholder="SOC analyst, OSINT feed, firewall log">
-                </label>
-
-                <label>
-                    Severity
-                    <select name="severity">
-                        {% for value, label in severity_choices %}
-                            <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-
-                <label>
-                    Description
-                    <textarea name="description" placeholder="Indicators, affected assets, mitigation notes"></textarea>
-                </label>
-
-                <button type="submit">Save Threat</button>
+                <button type="submit">Logout</button>
             </form>
+        </nav>
+
+        <section class="dashboard-grid" aria-label="Dashboard summary">
+            <div class="metric">
+                <span>Total News Alerts</span>
+                <strong>{{ total_alerts }}</strong>
+            </div>
+            <div class="metric">
+                <span>Critical Alerts</span>
+                <strong>{{ critical_alerts }}</strong>
+            </div>
+            <div class="metric">
+                <span>High Alerts</span>
+                <strong>{{ high_alerts }}</strong>
+            </div>
+            <div class="metric">
+                <span>Attack Keywords</span>
+                <strong>{{ attack_stats|length }}</strong>
+            </div>
         </section>
 
-        <section class="panel">
-            <h2>Threat Reports</h2>
-            <div class="threat-list">
-                {% for threat in threats %}
-                    <article class="threat">
-                        <h3>{{ threat.title }}</h3>
-                        <div class="meta">
-                            {{ threat.get_severity_display }} severity
-                            {% if threat.source %} from {{ threat.source }}{% endif %}
-                            on {{ threat.created_at|date:"M d, Y H:i" }}
+        <div class="split-grid">
+            <section class="panel">
+                <h2>Attack Types Ongoing</h2>
+                <div class="chart" aria-label="Attack type bar graph">
+                    {% for attack in attack_stats %}
+                        <div class="bar-row">
+                            <div class="bar-head">
+                                <strong>
+                                    <a href="{% url 'category' attack.slug %}">{{ attack.label_display }}</a>
+                                </strong>
+                                <span>{{ attack.count }}</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: {{ attack.percent }}%;"></div>
+                            </div>
                         </div>
-                        {% if threat.description %}
-                            <p>{{ threat.description }}</p>
+                    {% empty %}
+                        <p class="empty">No attack type data yet. Open Cybersecurity News to analyze articles.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Alert Severity</h2>
+                <div class="chart severity-chart" aria-label="Severity bar graph">
+                    {% for severity in severity_stats %}
+                        <div class="bar-row">
+                            <div class="bar-head">
+                                <strong>{{ severity.label_display }}</strong>
+                                <span>{{ severity.count }}</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill {{ severity.label }}" style="width: {{ severity.percent }}%;"></div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="empty">No severity data yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <section class="panel">
+            <h2>Live Alert Dashboard</h2>
+            <p>Filter saved alerts by attack type or severity.</p>
+            <div class="filter-bar">
+                <button class="filter-button active" type="button" data-filter="all">All</button>
+                {% for attack in attack_stats %}
+                    <button class="filter-button" type="button" data-filter="{{ attack.label }}">{{ attack.label_display }}</button>
+                {% endfor %}
+                <button class="filter-button" type="button" data-filter="critical">Critical</button>
+                <button class="filter-button" type="button" data-filter="high">High</button>
+            </div>
+            <div class="threat-list">
+                {% for alert in news_alerts %}
+                    <article class="alert" data-keyword="{{ alert.keyword }}" data-severity="{{ alert.severity }}">
+                        <h3>{{ alert.article_title }}</h3>
+                        <div class="meta">
+                            <span class="badge {{ alert.severity }}">{{ alert.keyword }}</span>
+                            {{ alert.get_severity_display }} alert from {{ alert.source }}
+                            on {{ alert.created_at|date:"M d, Y H:i" }}
+                        </div>
+                        {% if alert.summary %}
+                            <p>{{ alert.summary }}</p>
                         {% endif %}
                     </article>
                 {% empty %}
-                    <p class="empty">No threats stored yet. Add the first report above.</p>
+                    <p class="empty">No news alerts yet. Open Cybersecurity News to analyze fresh articles.</p>
                 {% endfor %}
             </div>
+            <p class="empty" id="filter-empty" hidden>No alerts match this filter.</p>
         </section>
+
+        <section class="panel">
+            <h2>News Analysis</h2>
+            <p>Review fresh cybersecurity news from backend RSS feeds.</p>
+            <a class="action-link" href="{% url 'news' %}">View Cybersecurity News</a>
+        </section>
+
     </main>
+    <script>
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const alerts = document.querySelectorAll('.alert');
+        const emptyState = document.getElementById('filter-empty');
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const filter = button.dataset.filter;
+                let visibleCount = 0;
+
+                filterButtons.forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+
+                alerts.forEach((alert) => {
+                    const matches = filter === 'all'
+                        || alert.dataset.keyword === filter
+                        || alert.dataset.severity === filter;
+                    alert.hidden = !matches;
+                    if (matches) {
+                        visibleCount += 1;
+                    }
+                });
+
+                if (emptyState) {
+                    emptyState.hidden = visibleCount !== 0;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

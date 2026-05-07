@@ -116,3 +116,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'login'
+
+CYBER_NEWS_FEEDS = [
+    {
+        'name': 'The Hacker News',
+        'url': 'https://thehackernews.com/feeds/posts/default',
+    },
+    {
+        'name': 'KrebsOnSecurity',
+        'url': 'https://krebsonsecurity.com/feed/',
+    },
+    {
+        'name': 'CISA Advisories',
+        'url': 'https://www.cisa.gov/cybersecurity-advisories/all.xml',
+    },
+]

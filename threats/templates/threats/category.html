@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category_name }} Alerts</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        .menu-bar {
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .menu-bar a {
+            border-radius: 6px;
+            color: #17202a;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-decoration: none;
+        }
+
+        .menu-bar a.active,
+        .menu-bar a:hover {
+            background: #116466;
+            color: #ffffff;
+        }
+
+        .menu-bar form {
+            margin-left: auto;
+        }
+
+        .menu-bar button {
+            border: 0;
+            border-radius: 6px;
+            background: #17202a;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 8px 10px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: #ffffff;
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .metric span {
+            color: #52616f;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 30px;
+        }
+
+        .chart,
+        .alert-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .bar-row {
+            display: grid;
+            gap: 6px;
+        }
+
+        .bar-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .bar-track {
+            background: #edf1f5;
+            border-radius: 999px;
+            height: 14px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: #116466;
+            border-radius: inherit;
+            height: 100%;
+            min-width: 6px;
+        }
+
+        .bar-fill.critical {
+            background: #c53030;
+        }
+
+        .bar-fill.high {
+            background: #c27803;
+        }
+
+        .alert {
+            border: 1px solid #d7dde4;
+            border-radius: 8px;
+            padding: 14px;
+            background: #ffffff;
+        }
+
+        .alert h2 {
+            font-size: 20px;
+            margin: 0 0 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 4px 8px;
+            background: #e9f5f5;
+            color: #116466;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .critical {
+            background: #fde8e8;
+            color: #9b1c1c;
+        }
+
+        .high {
+            background: #fff3d7;
+            color: #7a4b00;
+        }
+
+        .medium {
+            background: #e9f5f5;
+            color: #116466;
+        }
+
+        .meta {
+            color: #52616f;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .empty {
+            color: #52616f;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>{{ category_name }} Alerts</h1>
+            <p>Database alerts grouped by the NLP keyword category.</p>
+        </header>
+
+        <nav class="menu-bar" aria-label="Dashboard menu">
+            <a href="{% url 'index' %}">Dashboard</a>
+            <a href="{% url 'analytics' %}">Analytics</a>
+            <a href="{% url 'news' %}">News</a>
+            {% for category in category_links %}
+                <a class="{% if category.name == category_name %}active{% endif %}" href="{% url 'category' category.slug %}">
+                    {{ category.name }} ({{ category.count }})
+                </a>
+            {% endfor %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </nav>
+
+        <section class="summary-grid" aria-label="Category summary">
+            <div class="metric">
+                <span>Total {{ category_name }} Alerts</span>
+                <strong>{{ total_alerts }}</strong>
+            </div>
+            {% for severity in severity_stats %}
+                <div class="metric">
+                    <span>{{ severity.label_display }} Alerts</span>
+                    <strong>{{ severity.count }}</strong>
+                </div>
+            {% endfor %}
+        </section>
+
+        <section class="panel">
+            <h2>Severity Breakdown</h2>
+            <div class="chart">
+                {% for severity in severity_stats %}
+                    <div class="bar-row">
+                        <div class="bar-head">
+                            <strong>{{ severity.label_display }}</strong>
+                            <span>{{ severity.count }}</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill {{ severity.label }}" style="width: {{ severity.percent }}%;"></div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty">No alerts found for this category.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Category Alerts</h2>
+            <div class="alert-list">
+                {% for alert in alerts %}
+                    <article class="alert">
+                        <h2>{{ alert.article_title }}</h2>
+                        <div class="meta">
+                            <span class="badge {{ alert.severity }}">{{ alert.keyword }}</span>
+                            {{ alert.get_severity_display }} alert from {{ alert.source }}
+                            on {{ alert.created_at|date:"M d, Y H:i" }}
+                        </div>
+                        {% if alert.summary %}
+                            <p>{{ alert.summary }}</p>
+                        {% endif %}
+                    </article>
+                {% empty %}
+                    <p class="empty">No alerts are stored for this category yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>
