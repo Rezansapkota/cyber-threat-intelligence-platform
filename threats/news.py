@@ -25,7 +25,7 @@ def fetch_cybersecurity_news():
     if errors:
         error = f'Could not load news from: {", ".join(errors)}.'
 
-    return articles[:8], error
+    return articles[:18], error
 
 
 def _fetch_feed(source_name, feed_url):

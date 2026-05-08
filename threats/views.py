@@ -18,9 +18,9 @@ def index(request):
         news_alerts.values('keyword').annotate(count=Count('id')).order_by('-count'),
         'keyword',
     )
-    severity_stats = _chart_stats(
-        news_alerts.values('severity').annotate(count=Count('id')).order_by('-count'),
-        'severity',
+    source_stats = _chart_stats(
+        news_alerts.values('source').annotate(count=Count('id')).order_by('-count'),
+        'source',
     )
     category_links = _category_links()
 
@@ -30,14 +30,8 @@ def index(request):
         {
             'attack_stats': attack_stats,
             'category_links': category_links,
-            'critical_alerts': news_alerts.filter(
-                severity=NewsAlert.SEVERITY_CRITICAL,
-            ).count(),
-            'high_alerts': news_alerts.filter(
-                severity=NewsAlert.SEVERITY_HIGH,
-            ).count(),
             'news_alerts': news_alerts[:12],
-            'severity_stats': severity_stats,
+            'source_stats': source_stats[:5],
             'total_alerts': news_alerts.count(),
         },
     )
@@ -98,19 +92,34 @@ def analytics(request):
         news_alerts.values('source').annotate(count=Count('id')).order_by('-count'),
         'source',
     )
-    predictions = _attack_predictions(news_alerts)
 
     return render(
         request,
         'threats/analytics.html',
         {
             'attack_stats': attack_stats,
+            'attack_pie_segments': _pie_segments(attack_stats[:6]),
             'category_links': _category_links(),
-            'predictions': predictions,
             'radar_labels': _radar_labels(attack_stats[:5]),
             'radar_points': _radar_points(attack_stats[:5]),
             'severity_stats': severity_stats,
             'source_stats': source_stats[:6],
+            'total_alerts': news_alerts.count(),
+        },
+    )
+
+
+@login_required
+def predictions(request):
+    news_alerts = NewsAlert.objects.all()
+    predictions_data = _attack_predictions(news_alerts)
+
+    return render(
+        request,
+        'threats/predictions.html',
+        {
+            'category_links': _category_links(),
+            'predictions': predictions_data,
             'total_alerts': news_alerts.count(),
         },
     )
@@ -211,6 +220,32 @@ def _radar_coordinate(index, count, radius):
     return x, y
 
 
+def _pie_segments(stats):
+    total = sum(stat['count'] for stat in stats)
+    if not total:
+        return []
+
+    palette = ['#52677a', '#b89d6a', '#7a8c99', '#8f7560', '#9aa8b5', '#6f7f72']
+    start = 0
+    segments = []
+    for index, stat in enumerate(stats):
+        degrees = round((stat['count'] / total) * 360, 2)
+        end = start + degrees
+        segments.append(
+            {
+                'color': palette[index % len(palette)],
+                'count': stat['count'],
+                'end': round(end, 2),
+                'label': stat['label_display'],
+                'percent': round((stat['count'] / total) * 100),
+                'start': round(start, 2),
+            }
+        )
+        start = end
+
+    return segments
+
+
 def _attack_predictions(alerts):
     severity_weight = {
         NewsAlert.SEVERITY_CRITICAL: 3,
@@ -258,4 +293,10 @@ def _attack_predictions(alerts):
             prediction['risk'] = 'Watch'
             prediction['reason'] = 'Detected in current news, but with limited supporting alerts.'
 
-    return predictions[:5]
+    predictions = predictions[:5]
+    largest_score = max([prediction['score'] for prediction in predictions], default=1)
+    for index, prediction in enumerate(predictions, start=1):
+        prediction['percent'] = round((prediction['score'] / largest_score) * 100)
+        prediction['ray_index'] = index
+
+    return predictions

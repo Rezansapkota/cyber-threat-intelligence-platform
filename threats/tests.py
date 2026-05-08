@@ -30,6 +30,7 @@ class ThreatIndexViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Natural language processing dashboard')
         self.assertContains(response, 'Attack Keywords')
+        self.assertContains(response, 'Analyst Workflow')
         self.assertContains(response, reverse('news'))
         self.assertContains(response, reverse('analytics'))
 
@@ -47,9 +48,9 @@ class ThreatIndexViewTests(TestCase):
         response = self.client.get(reverse('index'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Live Alert Dashboard')
-        self.assertContains(response, 'ransomware')
-        self.assertContains(response, 'Critical alert')
+        self.assertContains(response, 'Total News Alerts')
+        self.assertContains(response, 'Attack Keywords')
+        self.assertContains(response, 'Latest Stored Alerts')
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_index_shows_dashboard_charts(self):
@@ -71,12 +72,10 @@ class ThreatIndexViewTests(TestCase):
         response = self.client.get(reverse('index'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Attack Types Ongoing')
-        self.assertContains(response, 'Alert Severity')
-        self.assertContains(response, 'Malware')
-        self.assertContains(response, 'Vulnerability')
         self.assertContains(response, 'Total News Alerts')
-        self.assertContains(response, reverse('category', args=['malware']))
+        self.assertContains(response, 'Attack Keywords')
+        self.assertContains(response, 'Top Attack Keywords')
+        self.assertContains(response, 'Source Coverage')
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_news_feed_returns_json(self):
@@ -94,7 +93,7 @@ class ThreatIndexViewTests(TestCase):
         self.assertContains(response, 'No cybersecurity news found right now.')
 
     @override_settings(CYBER_NEWS_FEEDS=[])
-    def test_analytics_page_shows_metrics_and_predictions(self):
+    def test_analytics_page_shows_metrics(self):
         NewsAlert.objects.create(
             keyword='malware',
             article_title='Malware targets developers',
@@ -114,8 +113,32 @@ class ThreatIndexViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Attack Analytics')
-        self.assertContains(response, 'Attack Intensity Spider Web')
-        self.assertContains(response, 'Upcoming Attack Prediction')
+        self.assertContains(response, 'Attack Intensity')
+        self.assertContains(response, 'Malware')
+        self.assertNotContains(response, 'Prediction Model')
+
+    @override_settings(CYBER_NEWS_FEEDS=[])
+    def test_predictions_page_shows_gauge_and_prediction_details(self):
+        NewsAlert.objects.create(
+            keyword='malware',
+            article_title='Malware targets developers',
+            article_url='https://example.com/malware-one',
+            source='Example Feed',
+            severity=NewsAlert.SEVERITY_HIGH,
+        )
+        NewsAlert.objects.create(
+            keyword='malware',
+            article_title='Malware campaign expands',
+            article_url='https://example.com/malware-two',
+            source='Example Feed',
+            severity=NewsAlert.SEVERITY_HIGH,
+        )
+
+        response = self.client.get(reverse('predictions'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Attack Predictions')
+        self.assertContains(response, 'Prediction Gauge Chart')
         self.assertContains(response, 'Malware')
         self.assertContains(response, 'High likelihood')
 
@@ -127,13 +150,21 @@ class ThreatIndexViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('login'), response['Location'])
 
+    def test_anonymous_predictions_redirects_to_login(self):
+        self.client.logout()
+
+        response = self.client.get(reverse('predictions'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response['Location'])
+
     def test_login_page_renders(self):
         self.client.logout()
 
         response = self.client.get(reverse('login'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Sign In')
+        self.assertContains(response, 'Cyber Threat Intelligence Platform')
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_category_page_lists_matching_alerts(self):

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ category_name }} Alerts</title>
+    <title>Attack Predictions</title>
     <style>
         :root {
             --background: #f6f7f9;
@@ -14,6 +14,7 @@
             --muted: #667085;
             --accent: #52677a;
             --accent-strong: #2f3a45;
+            --accent-warm: #b89d6a;
             --critical-bg: #f8e8e8;
             --critical-text: #8a2d2d;
             --high-bg: #f8efd9;
@@ -31,6 +32,7 @@
             --muted: #c7ced8;
             --accent: #8fa3b5;
             --accent-strong: #334155;
+            --accent-warm: #d7bc7f;
             --critical-bg: #48292c;
             --critical-text: #f3b8bd;
             --high-bg: #46381f;
@@ -39,13 +41,13 @@
         }
 
         body {
-            margin: 0;
-            font-family: var(--font-main);
             background: var(--background);
             background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(238, 241, 245, 0.72));
             color: var(--text);
+            font-family: var(--font-main);
             letter-spacing: 0;
             line-height: 1.5;
+            margin: 0;
             transition: background 180ms ease, color 180ms ease;
         }
 
@@ -54,25 +56,26 @@
         }
 
         main {
-            max-width: 1080px;
+            animation: pageIn 620ms ease both;
             margin: 0 auto;
+            max-width: 1180px;
             padding: 32px 20px;
         }
 
+        header {
+            margin-bottom: 24px;
+        }
+
         h1 {
-            margin: 0 0 8px;
             font-size: 38px;
             font-weight: 800;
+            margin: 0 0 8px;
         }
 
         h2 {
             font-size: 22px;
             font-weight: 750;
             margin-top: 0;
-        }
-
-        header {
-            margin-bottom: 24px;
         }
 
         header p,
@@ -82,15 +85,16 @@
 
         .menu-bar {
             align-items: center;
+            animation: slideDown 520ms ease both;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
+            box-shadow: 0 12px 30px var(--shadow);
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 20px;
             padding: 10px;
-            box-shadow: 0 12px 30px var(--shadow);
             position: relative;
             z-index: 40;
         }
@@ -120,9 +124,8 @@
         }
 
         .attack-menu summary {
-            background: var(--accent);
             border-radius: 6px;
-            color: #ffffff;
+            color: var(--text);
             cursor: pointer;
             font-weight: 700;
             list-style: none;
@@ -136,6 +139,8 @@
 
         .attack-menu summary:hover,
         .attack-menu[open] summary {
+            background: var(--accent);
+            color: #ffffff;
             transform: translateY(-1px);
         }
 
@@ -169,35 +174,57 @@
             transform: none;
         }
 
-        .menu-bar button {
-            border: 0;
-            border-radius: 6px;
-            background: var(--accent-strong);
-            color: #ffffff;
-            cursor: pointer;
-            font-weight: 700;
-            padding: 8px 10px;
-            transition: box-shadow 180ms ease, transform 140ms ease;
-        }
-
+        button,
         .theme-toggle {
             border: 0;
             border-radius: 6px;
-            background: var(--surface-soft);
-            color: var(--text);
             cursor: pointer;
             font-weight: 700;
+            transition: box-shadow 180ms ease, transform 140ms ease;
+        }
+
+        .menu-bar button {
+            background: var(--accent-strong);
+            color: #ffffff;
+            padding: 8px 10px;
+        }
+
+        .theme-toggle {
+            background: var(--surface-soft);
+            color: var(--text);
             padding: 8px 10px;
             position: fixed;
             right: 20px;
             top: 18px;
-            transition: box-shadow 180ms ease, transform 140ms ease;
             z-index: 20;
         }
 
-        [data-theme="dark"] .panel,
+        button:hover,
+        .theme-toggle:hover {
+            box-shadow: 0 10px 22px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            margin-bottom: 20px;
+        }
+
+        .metric,
+        .panel,
+        .prediction {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 12px 30px var(--shadow);
+            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
         [data-theme="dark"] .metric,
-        [data-theme="dark"] .alert,
+        [data-theme="dark"] .panel,
+        [data-theme="dark"] .prediction,
         [data-theme="dark"] .menu-bar {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)), var(--surface);
         }
@@ -208,49 +235,9 @@
             color: #f8fbff;
         }
 
-        button:hover,
-        .theme-toggle:hover {
-            box-shadow: 0 10px 22px var(--shadow);
-            transform: translateY(-2px);
-        }
-
-        button:active,
-        .theme-toggle:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 12px 30px var(--shadow);
-            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-        }
-
-        .panel:hover,
-        .metric:hover,
-        .alert:hover {
-            border-color: var(--accent);
-            box-shadow: 0 16px 36px var(--shadow);
-            transform: translateY(-2px);
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
         .metric {
             animation: riseIn 420ms ease both;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
             padding: 16px;
-            box-shadow: 0 12px 30px var(--shadow);
         }
 
         .metric span {
@@ -266,103 +253,180 @@
             font-weight: 800;
         }
 
-        .chart,
-        .alert-list {
-            display: grid;
-            gap: 12px;
+        .panel {
+            margin-bottom: 20px;
+            padding: 20px;
         }
 
-        .bar-row {
-            display: grid;
-            gap: 6px;
+        .panel:hover,
+        .prediction:hover {
+            border-color: var(--accent);
+            box-shadow: 0 16px 36px var(--shadow);
+            transform: translateY(-2px);
         }
 
-        .bar-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 14px;
-        }
-
-        .bar-track {
-            background: var(--surface-soft);
-            border-radius: 999px;
-            height: 14px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            animation: growBar 900ms ease-out both;
-            background: var(--accent);
-            border-radius: inherit;
-            height: 100%;
-            min-width: 6px;
-            transform-origin: left center;
-        }
-
-        .bar-fill.critical {
-            background: #c53030;
-        }
-
-        .bar-fill.high {
-            background: #c27803;
-        }
-
-        .alert {
-            animation: riseIn 420ms ease both;
+        .gauge-grid {
+            align-items: center;
+            background: linear-gradient(135deg, rgba(82, 103, 122, 0.08), rgba(184, 157, 106, 0.12));
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            background: var(--surface);
+            border-radius: 10px;
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            padding: 20px;
         }
 
-        .alert h2 {
-            font-size: 20px;
+        .gauge-card {
+            animation: riseIn 420ms ease both;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 12px 30px var(--shadow);
+            display: grid;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .gauge-card:nth-child(2) {
+            animation-delay: 80ms;
+        }
+
+        .gauge-card:nth-child(3) {
+            animation-delay: 160ms;
+        }
+
+        .gauge-card:nth-child(4) {
+            animation-delay: 240ms;
+        }
+
+        .gauge-meter {
+            --fill: 0deg;
+            aspect-ratio: 2 / 1;
+            background:
+                radial-gradient(circle at 50% 100%, var(--surface) 0 34%, transparent 35%),
+                conic-gradient(from 270deg at 50% 100%, var(--accent) 0 var(--fill), var(--surface-soft) var(--fill) 180deg, transparent 180deg 360deg);
+            border-radius: 999px 999px 0 0;
+            box-shadow: inset 0 0 0 1px var(--border), 0 14px 28px var(--shadow);
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .gauge-meter::after {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            bottom: -14px;
+            box-shadow: 0 8px 18px var(--shadow);
+            content: "";
+            height: 28px;
+            left: calc(50% - 14px);
+            position: absolute;
+            width: 28px;
+            z-index: 3;
+        }
+
+        .gauge-needle {
+            animation: needleSweep 900ms ease-out both;
+            background: var(--accent-strong);
+            border-radius: 999px;
+            bottom: 0;
+            height: 4px;
+            left: 50%;
+            position: absolute;
+            transform: rotate(calc(-90deg + var(--fill)));
+            transform-origin: left center;
+            width: 42%;
+            z-index: 2;
+        }
+
+        .gauge-score {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            box-shadow: 0 8px 18px var(--shadow);
+            font-size: 13px;
+            font-weight: 800;
+            left: 50%;
+            padding: 4px 9px;
+            position: absolute;
+            top: 58%;
+            transform: translateX(-50%);
+            z-index: 4;
+        }
+
+        .gauge-card h3 {
+            margin: 0;
+        }
+
+        .gauge-meta {
+            color: var(--muted);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .prediction-list {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .prediction {
+            animation: riseIn 420ms ease both;
+            padding: 14px;
+        }
+
+        .prediction h3 {
             margin: 0 0 8px;
         }
 
         .badge {
-            display: inline-block;
             border-radius: 999px;
-            padding: 4px 8px;
-            background: var(--surface-soft);
-            color: var(--accent);
+            display: inline-block;
             font-size: 13px;
             font-weight: 700;
+            padding: 4px 8px;
         }
 
-        .critical {
+        .risk-high {
             background: var(--critical-bg);
             color: var(--critical-text);
         }
 
-        .high {
+        .risk-medium {
             background: var(--high-bg);
             color: var(--high-text);
         }
 
-        .medium {
+        .risk-watch {
             background: var(--surface-soft);
             color: var(--accent);
         }
 
+        .empty,
         .meta {
             color: var(--muted);
-            font-size: 14px;
-            margin-bottom: 8px;
         }
 
-        .empty {
-            color: var(--muted);
-            margin: 0;
-        }
-
-        @keyframes growBar {
+        @keyframes pageIn {
             from {
-                transform: scaleX(0);
+                opacity: 0;
+                transform: translateY(8px);
             }
             to {
-                transform: scaleX(1);
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
@@ -376,27 +440,36 @@
                 transform: translateY(0);
             }
         }
+
+        @keyframes needleSweep {
+            from {
+                opacity: 0;
+                transform: rotate(-90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(calc(-90deg + var(--fill)));
+            }
+        }
     </style>
 </head>
 <body>
     <main>
         <header>
-            <h1>{{ category_name }} Alerts</h1>
-            <p>Database alerts grouped by the NLP keyword category.</p>
+            <h1>Attack Predictions</h1>
+            <p>Gauge chart prediction from stored NLP alerts into likely attack categories and risk levels.</p>
         </header>
 
         <nav class="menu-bar" aria-label="Dashboard menu">
             <a href="{% url 'index' %}">Dashboard</a>
             <a href="{% url 'analytics' %}">Analytics</a>
-            <a href="{% url 'predictions' %}">Predictions</a>
+            <a class="active" href="{% url 'predictions' %}">Predictions</a>
             <a href="{% url 'news' %}">News</a>
             <details class="attack-menu">
                 <summary>Attack Types</summary>
                 <div class="attack-menu-list">
                     {% for category in category_links %}
-                        <a class="{% if category.name == category_name %}active{% endif %}" href="{% url 'category' category.slug %}">
-                            {{ category.name }} ({{ category.count }})
-                        </a>
+                        <a href="{% url 'category' category.slug %}">{{ category.name }} ({{ category.count }})</a>
                     {% empty %}
                         <span>No attacks yet</span>
                     {% endfor %}
@@ -409,34 +482,55 @@
         </nav>
         <button class="theme-toggle" type="button" data-theme-toggle>Dark Mode</button>
 
-        <section class="summary-grid" aria-label="Category summary">
+        <section class="dashboard-grid" aria-label="Prediction summary">
             <div class="metric">
-                <span>Total {{ category_name }} Alerts</span>
+                <span>Total Alerts</span>
                 <strong>{{ total_alerts }}</strong>
             </div>
             <div class="metric">
-                <span>Keyword Category</span>
-                <strong>{{ category_name }}</strong>
+                <span>Stored Keywords</span>
+                <strong>{{ category_links|length }}</strong>
+            </div>
+            <div class="metric">
+                <span>Predictions</span>
+                <strong>{{ predictions|length }}</strong>
             </div>
         </section>
 
         <section class="panel">
-            <h2>Category Alerts</h2>
-            <div class="alert-list">
-                {% for alert in alerts %}
-                    <article class="alert">
-                        <h2>{{ alert.article_title }}</h2>
-                        <div class="meta">
-                            <span class="badge">{{ alert.keyword }}</span>
-                            Alert from {{ alert.source }}
-                            on {{ alert.created_at|date:"M d, Y H:i" }}
-                        </div>
-                        {% if alert.summary %}
-                            <p>{{ alert.summary }}</p>
-                        {% endif %}
+            <h2>Prediction Gauge Chart</h2>
+            {% if predictions %}
+                <div class="gauge-grid" aria-label="Upcoming attack prediction gauge chart">
+                    {% for prediction in predictions %}
+                        <article class="gauge-card">
+                            <div class="gauge-meter" style="--fill: calc({{ prediction.percent }} * 1.8deg);">
+                                <span class="gauge-needle"></span>
+                                <span class="gauge-score">{{ prediction.score }}</span>
+                            </div>
+                            <div>
+                                <h3>{{ prediction.label }}</h3>
+                                <p class="gauge-meta">{{ prediction.risk }} likelihood from {{ prediction.count }} stored alerts.</p>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty">No predictions yet. Open News to collect and process alerts.</p>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h2>Prediction Details</h2>
+            <div class="prediction-list">
+                {% for prediction in predictions %}
+                    <article class="prediction">
+                        <h3>{{ prediction.label }}</h3>
+                        <span class="badge risk-{{ prediction.risk|lower }}">{{ prediction.risk }} likelihood</span>
+                        <p>{{ prediction.reason }}</p>
+                        <p class="meta">Score {{ prediction.score }} from {{ prediction.count }} stored alerts.</p>
                     </article>
                 {% empty %}
-                    <p class="empty">No alerts are stored for this category yet.</p>
+                    <p class="empty">No prediction details available yet.</p>
                 {% endfor %}
             </div>
         </section>

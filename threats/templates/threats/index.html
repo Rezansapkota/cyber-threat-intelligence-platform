@@ -5,11 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Threat Intelligence Platform</title>
     <style>
+        :root {
+            --background: #f6f7f9;
+            --surface: #ffffff;
+            --surface-soft: #eef1f5;
+            --border: #d8dee6;
+            --text: #1f2933;
+            --muted: #667085;
+            --accent: #52677a;
+            --accent-strong: #2f3a45;
+            --critical-bg: #f8e8e8;
+            --critical-text: #8a2d2d;
+            --high-bg: #f8efd9;
+            --high-text: #725018;
+            --shadow: rgba(31, 41, 51, 0.08);
+            --font-main: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --background: #111827;
+            --surface: #1f2937;
+            --surface-soft: #2b3645;
+            --border: #3f4b5a;
+            --text: #f3f4f6;
+            --muted: #c7ced8;
+            --accent: #8fa3b5;
+            --accent-strong: #334155;
+            --critical-bg: #48292c;
+            --critical-text: #f3b8bd;
+            --high-bg: #46381f;
+            --high-text: #efd49a;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            color: #17202a;
+            font-family: var(--font-main);
+            background: var(--background);
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(238, 241, 245, 0.72));
+            color: var(--text);
+            letter-spacing: 0;
+            line-height: 1.5;
+            transition: background 180ms ease, color 180ms ease;
+        }
+
+        [data-theme="dark"] body {
+            background-image: linear-gradient(135deg, rgba(31, 41, 55, 0.82), rgba(17, 24, 39, 0.9));
         }
 
         main {
@@ -18,74 +59,209 @@
             padding: 32px 20px;
         }
 
+        .dashboard-shell {
+            animation: pageGlow 780ms ease both;
+        }
+
         header {
             margin-bottom: 24px;
         }
 
+        header p,
+        .panel p {
+            color: var(--muted);
+        }
+
         h1 {
             margin: 0 0 8px;
-            font-size: 32px;
+            font-size: 38px;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 750;
+            margin-top: 0;
+        }
+
+        a {
+            color: var(--accent);
         }
 
         .menu-bar {
+            animation: slideDown 520ms ease both;
             align-items: center;
-            background: #ffffff;
-            border: 1px solid #d7dde4;
-            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 20px;
             padding: 10px;
+            box-shadow: 0 12px 30px var(--shadow);
+            position: relative;
+            z-index: 40;
         }
 
         .menu-bar a {
             border-radius: 6px;
-            color: #17202a;
+            color: var(--text);
             font-weight: 700;
             padding: 8px 10px;
             text-decoration: none;
+            transition: background 180ms ease, color 180ms ease, transform 180ms ease;
         }
 
         .menu-bar a.active,
         .menu-bar a:hover {
-            background: #116466;
+            background: var(--accent);
             color: #ffffff;
+            transform: translateY(-1px);
         }
 
         .menu-bar form {
             margin-left: auto;
         }
 
+        .attack-menu {
+            position: relative;
+        }
+
+        .attack-menu summary {
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 700;
+            list-style: none;
+            padding: 8px 10px;
+            transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+        }
+
+        .attack-menu summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .attack-menu summary:hover,
+        .attack-menu[open] summary {
+            background: var(--accent);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .attack-menu-list {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 16px 36px var(--shadow);
+            display: grid;
+            gap: 4px;
+            left: 0;
+            min-width: 220px;
+            padding: 8px;
+            position: absolute;
+            top: calc(100% + 8px);
+            z-index: 60;
+        }
+
+        .attack-menu-list a,
+        .attack-menu-list span {
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 14px;
+            padding: 8px 10px;
+            text-decoration: none;
+        }
+
+        .attack-menu-list a:hover {
+            background: var(--surface-soft);
+            color: var(--text);
+            transform: none;
+        }
+
         .menu-bar button {
-            background: #17202a;
+            background: var(--accent-strong);
             padding: 8px 10px;
         }
 
+        .theme-toggle {
+            background: var(--surface-soft);
+            color: var(--text);
+            border: 1px solid var(--border);
+            position: fixed;
+            right: 20px;
+            top: 18px;
+            z-index: 20;
+        }
+
         .panel {
-            background: #ffffff;
-            border: 1px solid #d7dde4;
-            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 12px 30px var(--shadow);
+            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        [data-theme="dark"] .panel,
+        [data-theme="dark"] .metric,
+        [data-theme="dark"] .alert,
+        [data-theme="dark"] .menu-bar {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)), var(--surface);
+        }
+
+        [data-theme="dark"] .menu-bar button {
+            background: #263b50;
+            color: #f8fbff;
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background: #243b50;
+            color: #f8fbff;
+        }
+
+        .panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px var(--shadow);
         }
 
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
             gap: 14px;
             margin-bottom: 20px;
         }
 
         .metric {
-            background: #ffffff;
-            border: 1px solid #d7dde4;
-            border-radius: 8px;
+            animation: riseIn 420ms ease both;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 16px;
+            box-shadow: 0 12px 30px var(--shadow);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .metric:nth-child(2) {
+            animation-delay: 70ms;
+        }
+
+        .metric:nth-child(3) {
+            animation-delay: 140ms;
+        }
+
+        .metric:nth-child(4) {
+            animation-delay: 210ms;
+        }
+
+        .metric:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 36px var(--shadow);
         }
 
         .metric span {
-            color: #52616f;
+            color: var(--muted);
             display: block;
             font-size: 14px;
             margin-bottom: 8px;
@@ -94,16 +270,21 @@
         .metric strong {
             display: block;
             font-size: 30px;
+            font-weight: 800;
         }
 
-        .split-grid {
+        .overview-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
             gap: 20px;
+            grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
         }
 
-        @media (max-width: 820px) {
-            .split-grid {
+        .wide-panel {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 860px) {
+            .overview-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -113,100 +294,49 @@
             border: 0;
             border-radius: 6px;
             padding: 10px 14px;
-            background: #116466;
+            background: var(--accent);
             color: #ffffff;
             font-weight: 700;
             cursor: pointer;
+            transition: background 180ms ease, box-shadow 180ms ease, transform 140ms ease;
         }
 
-        .action-link {
-            display: inline-block;
-            border-radius: 6px;
-            padding: 10px 14px;
-            background: #17202a;
-            color: #ffffff;
-            font-weight: 700;
-            text-decoration: none;
+        button:hover {
+            box-shadow: 0 10px 22px var(--shadow);
+            transform: translateY(-2px);
         }
 
-        .filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 12px 0 16px;
+        button:active {
+            transform: translateY(0) scale(0.98);
         }
 
-        .filter-button {
-            border: 1px solid #b9c2cf;
-            border-radius: 999px;
-            background: #ffffff;
-            color: #17202a;
-            padding: 8px 12px;
-        }
-
-        .filter-button.active {
-            background: #116466;
-            border-color: #116466;
-            color: #ffffff;
-        }
-
-        .chart {
-            display: grid;
-            gap: 12px;
-        }
-
-        .bar-row {
-            display: grid;
-            gap: 6px;
-        }
-
-        .bar-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 14px;
-        }
-
-        .bar-track {
-            background: #edf1f5;
-            border-radius: 999px;
-            height: 14px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            background: #116466;
-            border-radius: inherit;
-            height: 100%;
-            min-width: 6px;
-        }
-
-        .severity-chart .bar-fill.critical {
-            background: #c53030;
-        }
-
-        .severity-chart .bar-fill.high {
-            background: #c27803;
-        }
-
-        .severity-chart .bar-fill.medium {
-            background: #116466;
-        }
-
-        .threat-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .threat,
         .alert {
-            border: 1px solid #d7dde4;
+            animation: riseIn 420ms ease both;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 14px;
-            background: #ffffff;
+            background: var(--surface);
+            transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
         }
 
-        .threat h3,
+        .alert:nth-child(2) {
+            animation-delay: 70ms;
+        }
+
+        .alert:nth-child(3) {
+            animation-delay: 140ms;
+        }
+
+        .alert:nth-child(4) {
+            animation-delay: 210ms;
+        }
+
+        .alert:hover {
+            border-color: var(--accent);
+            box-shadow: 0 12px 26px var(--shadow);
+            transform: translateY(-2px);
+        }
+
         .alert h3 {
             margin: 0 0 8px;
         }
@@ -215,59 +345,209 @@
             display: inline-block;
             border-radius: 999px;
             padding: 4px 8px;
-            background: #e9f5f5;
-            color: #116466;
+            background: var(--surface-soft);
+            color: var(--accent);
             font-size: 13px;
             font-weight: 700;
         }
 
-        .critical {
-            background: #fde8e8;
-            color: #9b1c1c;
-        }
-
-        .high {
-            background: #fff3d7;
-            color: #7a4b00;
-        }
-
-        .medium {
-            background: #e9f5f5;
-            color: #116466;
-        }
-
         .meta {
-            color: #52616f;
+            color: var(--muted);
             font-size: 14px;
             margin-bottom: 8px;
         }
 
         .empty {
-            color: #52616f;
+            color: var(--muted);
             margin: 0;
+        }
+
+        .section-head {
+            align-items: center;
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+        }
+
+        .section-head a {
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .keyword-list,
+        .source-list,
+        .recent-list,
+        .action-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .keyword-item,
+        .source-item,
+        .recent-item,
+        .action-card {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .keyword-item,
+        .source-item {
+            display: grid;
+            gap: 8px;
+        }
+
+        .item-line {
+            align-items: center;
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .item-line strong,
+        .recent-item h3 {
+            margin: 0;
+        }
+
+        .item-count {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 800;
+            padding: 3px 8px;
+        }
+
+        .progress-track {
+            background: var(--surface);
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            animation: growBar 900ms ease-out both;
+            background: var(--accent);
+            border-radius: inherit;
+            height: 100%;
+            min-width: 6px;
+            transform-origin: left center;
+        }
+
+        .recent-item {
+            animation: riseIn 420ms ease both;
+        }
+
+        .recent-item h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .action-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .action-card {
+            color: var(--text);
+            text-decoration: none;
+            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .action-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 12px 26px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .action-card strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .action-card span {
+            color: var(--muted);
+        }
+
+        @keyframes growBar {
+            from {
+                transform: scaleX(0);
+            }
+            to {
+                transform: scaleX(1);
+            }
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pageGlow {
+            from {
+                filter: saturate(0.82);
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                filter: saturate(1);
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
     </style>
 </head>
 <body>
-    <main>
+    <main class="dashboard-shell">
         <header>
-            <h1>Cyber Threat Intelligence Platform</h1>
             <p>Natural language processing dashboard for cybersecurity news alerts.</p>
         </header>
 
         <nav class="menu-bar" aria-label="Dashboard menu">
             <a class="active" href="{% url 'index' %}">Dashboard</a>
             <a href="{% url 'analytics' %}">Analytics</a>
+            <a href="{% url 'predictions' %}">Predictions</a>
             <a href="{% url 'news' %}">News</a>
-            {% for category in category_links %}
-                <a href="{% url 'category' category.slug %}">{{ category.name }} ({{ category.count }})</a>
-            {% endfor %}
+            <details class="attack-menu">
+                <summary>Attack Types</summary>
+                <div class="attack-menu-list">
+                    {% for category in category_links %}
+                        <a href="{% url 'category' category.slug %}">{{ category.name }} ({{ category.count }})</a>
+                    {% empty %}
+                        <span>No attacks yet</span>
+                    {% endfor %}
+                </div>
+            </details>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button type="submit">Logout</button>
             </form>
         </nav>
+        <button class="theme-toggle" type="button" data-theme-toggle>Dark Mode</button>
 
         <section class="dashboard-grid" aria-label="Dashboard summary">
             <div class="metric">
@@ -275,125 +555,133 @@
                 <strong>{{ total_alerts }}</strong>
             </div>
             <div class="metric">
-                <span>Critical Alerts</span>
-                <strong>{{ critical_alerts }}</strong>
-            </div>
-            <div class="metric">
-                <span>High Alerts</span>
-                <strong>{{ high_alerts }}</strong>
-            </div>
-            <div class="metric">
                 <span>Attack Keywords</span>
                 <strong>{{ attack_stats|length }}</strong>
             </div>
+            <div class="metric">
+                <span>News Sources</span>
+                <strong>{{ source_stats|length }}</strong>
+            </div>
+            <div class="metric">
+                <span>Recent Alerts</span>
+                <strong>{{ news_alerts|length }}</strong>
+            </div>
         </section>
 
-        <div class="split-grid">
-            <section class="panel">
-                <h2>Attack Types Ongoing</h2>
-                <div class="chart" aria-label="Attack type bar graph">
-                    {% for attack in attack_stats %}
-                        <div class="bar-row">
-                            <div class="bar-head">
+        <section class="overview-grid" aria-label="Dashboard overview">
+            <div class="panel">
+                <div class="section-head">
+                    <h2>Top Attack Keywords</h2>
+                    <a href="{% url 'analytics' %}">Analytics</a>
+                </div>
+                <div class="keyword-list">
+                    {% for attack in attack_stats|slice:":5" %}
+                        <div class="keyword-item">
+                            <div class="item-line">
                                 <strong>
                                     <a href="{% url 'category' attack.slug %}">{{ attack.label_display }}</a>
                                 </strong>
-                                <span>{{ attack.count }}</span>
+                                <span class="item-count">{{ attack.count }}</span>
                             </div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: {{ attack.percent }}%;"></div>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p class="empty">No attack type data yet. Open Cybersecurity News to analyze articles.</p>
-                    {% endfor %}
-                </div>
-            </section>
-
-            <section class="panel">
-                <h2>Alert Severity</h2>
-                <div class="chart severity-chart" aria-label="Severity bar graph">
-                    {% for severity in severity_stats %}
-                        <div class="bar-row">
-                            <div class="bar-head">
-                                <strong>{{ severity.label_display }}</strong>
-                                <span>{{ severity.count }}</span>
-                            </div>
-                            <div class="bar-track">
-                                <div class="bar-fill {{ severity.label }}" style="width: {{ severity.percent }}%;"></div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: {{ attack.percent }}%;"></div>
                             </div>
                         </div>
                     {% empty %}
-                        <p class="empty">No severity data yet.</p>
+                        <p class="empty">Open News to fetch and analyze cybersecurity articles.</p>
                     {% endfor %}
                 </div>
-            </section>
-        </div>
-
-        <section class="panel">
-            <h2>Live Alert Dashboard</h2>
-            <p>Filter saved alerts by attack type or severity.</p>
-            <div class="filter-bar">
-                <button class="filter-button active" type="button" data-filter="all">All</button>
-                {% for attack in attack_stats %}
-                    <button class="filter-button" type="button" data-filter="{{ attack.label }}">{{ attack.label_display }}</button>
-                {% endfor %}
-                <button class="filter-button" type="button" data-filter="critical">Critical</button>
-                <button class="filter-button" type="button" data-filter="high">High</button>
             </div>
-            <div class="threat-list">
-                {% for alert in news_alerts %}
-                    <article class="alert" data-keyword="{{ alert.keyword }}" data-severity="{{ alert.severity }}">
-                        <h3>{{ alert.article_title }}</h3>
-                        <div class="meta">
-                            <span class="badge {{ alert.severity }}">{{ alert.keyword }}</span>
-                            {{ alert.get_severity_display }} alert from {{ alert.source }}
-                            on {{ alert.created_at|date:"M d, Y H:i" }}
+
+            <div class="panel">
+                <div class="section-head">
+                    <h2>Source Coverage</h2>
+                    <a href="{% url 'news' %}">News</a>
+                </div>
+                <div class="source-list">
+                    {% for source in source_stats %}
+                        <div class="source-item">
+                            <div class="item-line">
+                                <strong>{{ source.label_display }}</strong>
+                                <span class="item-count">{{ source.count }}</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: {{ source.percent }}%;"></div>
+                            </div>
                         </div>
-                        {% if alert.summary %}
-                            <p>{{ alert.summary }}</p>
-                        {% endif %}
-                    </article>
-                {% empty %}
-                    <p class="empty">No news alerts yet. Open Cybersecurity News to analyze fresh articles.</p>
-                {% endfor %}
+                    {% empty %}
+                        <p class="empty">No source data yet.</p>
+                    {% endfor %}
+                </div>
             </div>
-            <p class="empty" id="filter-empty" hidden>No alerts match this filter.</p>
-        </section>
 
-        <section class="panel">
-            <h2>News Analysis</h2>
-            <p>Review fresh cybersecurity news from backend RSS feeds.</p>
-            <a class="action-link" href="{% url 'news' %}">View Cybersecurity News</a>
+            <div class="panel wide-panel">
+                <div class="section-head">
+                    <h2>Latest Stored Alerts</h2>
+                    <a href="{% url 'predictions' %}">Predictions</a>
+                </div>
+                <div class="recent-list">
+                    {% for alert in news_alerts|slice:":5" %}
+                        <article class="recent-item">
+                            <h3>{{ alert.article_title }}</h3>
+                            <div class="meta">
+                                <span class="badge">{{ alert.keyword }}</span>
+                                from {{ alert.source }} on {{ alert.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </article>
+                    {% empty %}
+                        <p class="empty">No saved alerts yet. Visit News to start collecting RSS articles.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel wide-panel">
+                <h2>Analyst Workflow</h2>
+                <div class="action-grid">
+                    <a class="action-card" href="{% url 'news' %}">
+                        <strong>Collect News</strong>
+                        <span>Fetch more RSS articles and run NLP extraction.</span>
+                    </a>
+                    <a class="action-card" href="{% url 'analytics' %}">
+                        <strong>Review Analytics</strong>
+                        <span>Compare attack keywords, sources, and intensity.</span>
+                    </a>
+                    <a class="action-card" href="{% url 'predictions' %}">
+                        <strong>Check Predictions</strong>
+                        <span>View gauge-based likelihood from stored alerts.</span>
+                    </a>
+                </div>
+            </div>
         </section>
 
     </main>
     <script>
-        const filterButtons = document.querySelectorAll('.filter-button');
-        const alerts = document.querySelectorAll('.alert');
-        const emptyState = document.getElementById('filter-empty');
+        const themeToggle = document.querySelector('[data-theme-toggle]');
+        const attackMenus = document.querySelectorAll('.attack-menu');
 
-        filterButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const filter = button.dataset.filter;
-                let visibleCount = 0;
+        function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            localStorage.setItem('theme', theme);
+            if (themeToggle) {
+                themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+            }
+        }
 
-                filterButtons.forEach((item) => item.classList.remove('active'));
-                button.classList.add('active');
+        applyTheme(localStorage.getItem('theme') || 'light');
 
-                alerts.forEach((alert) => {
-                    const matches = filter === 'all'
-                        || alert.dataset.keyword === filter
-                        || alert.dataset.severity === filter;
-                    alert.hidden = !matches;
-                    if (matches) {
-                        visibleCount += 1;
-                    }
-                });
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+                applyTheme(nextTheme);
+            });
+        }
 
-                if (emptyState) {
-                    emptyState.hidden = visibleCount !== 0;
-                }
+        attackMenus.forEach((menu) => {
+            menu.addEventListener('mouseenter', () => {
+                menu.open = true;
+            });
+            menu.addEventListener('mouseleave', () => {
+                menu.open = false;
             });
         });
     </script>
