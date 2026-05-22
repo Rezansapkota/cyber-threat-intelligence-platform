@@ -2,6 +2,8 @@ from django.db import models
 
 
 class Threat(models.Model):
+    """Manual threat record stored by analysts."""
+
     SEVERITY_LOW = 'low'
     SEVERITY_MEDIUM = 'medium'
     SEVERITY_HIGH = 'high'
@@ -28,10 +30,13 @@ class Threat(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
+        """Show the threat title in admin and shell output."""
         return self.title
 
 
 class NewsAlert(models.Model):
+    """Threat alert created from cybersecurity news keywords."""
+
     SEVERITY_MEDIUM = 'medium'
     SEVERITY_HIGH = 'high'
     SEVERITY_CRITICAL = 'critical'
@@ -64,4 +69,5 @@ class NewsAlert(models.Model):
         ]
 
     def __str__(self):
+        """Show the matched keyword beside the source article title."""
         return f'{self.keyword}: {self.article_title}'

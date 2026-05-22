@@ -9,6 +9,7 @@ from django.conf import settings
 
 
 def fetch_cybersecurity_news():
+    """Fetch and normalize the latest articles from configured RSS/Atom feeds."""
     articles = []
     errors = []
 
@@ -29,6 +30,7 @@ def fetch_cybersecurity_news():
 
 
 def _fetch_feed(source_name, feed_url):
+    """Download one feed and send it to the matching parser."""
     request = Request(
         feed_url,
         headers={'User-Agent': 'cyber-threat-intelligence-platform/1.0'},
@@ -43,6 +45,7 @@ def _fetch_feed(source_name, feed_url):
 
 
 def _parse_rss(source_name, root):
+    """Convert RSS items into the app's article dictionary format."""
     articles = []
     for item in root.findall('./channel/item')[:6]:
         published = _text(item, 'pubDate')
@@ -60,6 +63,7 @@ def _parse_rss(source_name, root):
 
 
 def _parse_atom(source_name, root):
+    """Convert Atom entries into the app's article dictionary format."""
     namespace = {'atom': 'http://www.w3.org/2005/Atom'}
     articles = []
     for entry in root.findall('atom:entry', namespace)[:6]:
@@ -83,16 +87,19 @@ def _parse_atom(source_name, root):
 
 
 def _text(element, child_name):
+    """Read text from a child element, returning a safe empty string."""
     child = element.find(child_name)
     return child.text.strip() if child is not None and child.text else ''
 
 
 def _atom_text(element, child_name, namespace):
+    """Read namespaced Atom text, returning a safe empty string."""
     child = element.find(f'atom:{child_name}', namespace)
     return child.text.strip() if child is not None and child.text else ''
 
 
 def _published_sort(value):
+    """Normalize feed dates so article lists can be sorted reliably."""
     if not value:
         return ''
 
@@ -103,6 +110,7 @@ def _published_sort(value):
 
 
 def _clean_summary(value, max_length=420):
+    """Strip markup and trim long feed summaries for display."""
     if not value:
         return ''
 

@@ -319,6 +319,7 @@
     </style>
 </head>
 <body>
+    <!-- News page: fetched articles with extracted threat keywords. -->
     <main>
         <header>
             <a class="back-link" href="{% url 'index' %}">Back to Threat Reports</a>
@@ -386,6 +387,7 @@
             </div>
         </section>
     </main>
+    <!-- Shared theme and menu behavior for the dashboard pages. -->
     <script>
         const themeToggle = document.querySelector('[data-theme-toggle]');
         const attackMenus = document.querySelectorAll('.attack-menu');

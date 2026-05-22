@@ -12,34 +12,16 @@
             --text: #1f2933;
             --muted: #667085;
             --accent: #52677a;
-            --pop: #16a34a;
-            --pop-soft: #dcfce7;
-            --pop-text: #14532d;
             --input-bg: #ffffff;
-            --overlay: rgba(7, 16, 24, 0.18);
             --shadow: rgba(23, 32, 42, 0.12);
             --font-main: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        [data-theme="dark"] {
-            --background: #111827;
-            --surface: rgba(31, 41, 55, 0.92);
-            --border: #3f4b5a;
-            --text: #f3f4f6;
-            --muted: #c7ced8;
-            --accent: #8fa3b5;
-            --pop: #22c55e;
-            --pop-soft: rgba(34, 197, 94, 0.18);
-            --pop-text: #bbf7d0;
-            --input-bg: #0f1d2a;
-            --overlay: rgba(7, 16, 24, 0.36);
-            --shadow: rgba(0, 0, 0, 0.38);
         }
 
         body {
             align-items: center;
             background: var(--background);
             background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(238, 241, 245, 0.72));
+            box-sizing: border-box;
             color: var(--text);
             display: flex;
             font-family: var(--font-main);
@@ -48,34 +30,9 @@
             margin: 0;
             min-height: 100vh;
             padding: 32px;
-            position: relative;
-            transition: background 180ms ease, color 180ms ease;
-            overflow: hidden;
-            box-sizing: border-box;
-            isolation: isolate;
-        }
-
-        [data-theme="dark"] body {
-            background-image: linear-gradient(135deg, rgba(31, 41, 55, 0.82), rgba(17, 24, 39, 0.9));
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.26);
-            border-radius: 6px;
-            color: #ffffff;
-            cursor: pointer;
-            font-weight: 700;
-            padding: 8px 10px;
-            position: fixed;
-            right: 20px;
-            top: 18px;
-            transition: box-shadow 180ms ease, transform 140ms ease, background 180ms ease;
-            z-index: 3;
         }
 
         .login-panel {
-            animation: riseIn 420ms ease both;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -83,8 +40,6 @@
             max-width: 380px;
             padding: 24px;
             width: 100%;
-            backdrop-filter: blur(14px);
-            z-index: 2;
         }
 
         h1 {
@@ -128,48 +83,13 @@
         }
 
         button {
+            background: var(--accent);
             border: 0;
             border-radius: 6px;
-            background: var(--accent);
             color: #ffffff;
             cursor: pointer;
             font-weight: 700;
-            overflow: hidden;
             padding: 10px 14px;
-            position: relative;
-            transition: box-shadow 180ms ease, transform 140ms ease, background 180ms ease;
-        }
-
-        button::before {
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
-            content: "";
-            height: 100%;
-            left: -80%;
-            position: absolute;
-            top: 0;
-            transform: skewX(-18deg);
-            transition: left 420ms ease;
-            width: 52%;
-        }
-
-        button:hover,
-        .theme-toggle:hover {
-            box-shadow: 0 10px 22px var(--shadow);
-            transform: translateY(-2px);
-        }
-
-        button:hover::before {
-            left: 128%;
-        }
-
-        button:active,
-        .theme-toggle:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        button.is-loading {
-            animation: pulseButton 900ms ease-in-out infinite;
-            pointer-events: none;
         }
 
         .error {
@@ -179,105 +99,23 @@
             color: #9b1c1c;
             padding: 10px;
         }
-
-        .demo-credentials {
-            animation: credentialPop 620ms ease 180ms both, credentialGlow 1800ms ease-in-out 900ms infinite;
-            background: linear-gradient(135deg, var(--pop-soft), rgba(255, 255, 255, 0.72));
-            border: 1px solid var(--pop);
-            border-radius: 8px;
-            color: var(--pop-text);
-            display: grid;
-            gap: 6px;
-            margin-top: 18px;
-            padding: 12px;
-            position: relative;
-            transform-origin: center;
-        }
-
-        .demo-credentials::before {
-            background: var(--pop);
-            border-radius: 999px;
-            color: #ffffff;
-            content: "Use this";
-            font-size: 12px;
-            font-weight: 800;
-            padding: 3px 8px;
-            position: absolute;
-            right: 10px;
-            top: -12px;
-        }
-
-        .demo-credentials strong {
-            font-size: 14px;
-        }
-
-        .demo-credentials span {
-            color: var(--pop-text);
-            display: block;
-            font-size: 14px;
-        }
-
-        @keyframes riseIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes pulseButton {
-            0%,
-            100% {
-                box-shadow: 0 0 0 rgba(82, 103, 122, 0);
-            }
-            50% {
-                box-shadow: 0 0 0 5px rgba(82, 103, 122, 0.18), 0 12px 26px var(--shadow);
-            }
-        }
-
-        @keyframes credentialPop {
-            from {
-                opacity: 0;
-                transform: scale(0.94) translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        @keyframes credentialGlow {
-            0%,
-            100% {
-                box-shadow: 0 0 0 rgba(82, 103, 122, 0);
-            }
-            50% {
-                box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.18), 0 12px 24px var(--shadow);
-            }
-        }
     </style>
 </head>
 <body>
-    <button class="theme-toggle" type="button" data-theme-toggle>Dark Mode</button>
+    <!-- Login card rendered by Django's built-in LoginView. -->
     <main class="login-panel">
         <h1>Cyber Threat Intelligence Platform</h1>
         <p>Sign in to access the intelligence dashboard.</p>
 
-        <div class="demo-credentials" aria-label="Demo credentials">
-            <strong>Demo Login</strong>
-            <span>Username: rejan</span>
-            <span>Password: rejan</span>
-        </div>
-
+        <!-- Django adds form errors after a failed login attempt. -->
         {% if form.errors %}
             <p class="error">Invalid username or password.</p>
         {% endif %}
 
         <form method="post">
+            <!-- CSRF protects the login POST from cross-site form submissions. -->
             {% csrf_token %}
+            <!-- Preserve the protected page URL so login can redirect back. -->
             <input type="hidden" name="next" value="{{ next }}">
             <label>
                 Username
@@ -290,35 +128,5 @@
             <button type="submit">Login</button>
         </form>
     </main>
-    <script>
-        const themeToggle = document.querySelector('[data-theme-toggle]');
-
-        function applyTheme(theme) {
-            document.documentElement.dataset.theme = theme;
-            localStorage.setItem('theme', theme);
-            if (themeToggle) {
-                themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-            }
-        }
-
-        applyTheme(localStorage.getItem('theme') || 'light');
-
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-                applyTheme(nextTheme);
-            });
-        }
-
-        const loginForm = document.querySelector('form');
-        const loginButton = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
-
-        if (loginForm && loginButton) {
-            loginForm.addEventListener('submit', () => {
-                loginButton.classList.add('is-loading');
-                loginButton.textContent = 'Opening...';
-            });
-        }
-    </script>
 </body>
 </html>

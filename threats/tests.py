@@ -8,7 +8,11 @@ from .nlp import extract_keywords, process_news_articles
 
 
 class ThreatIndexViewTests(TestCase):
+    """Dashboard, auth, and page rendering coverage."""
+
     def setUp(self):
+        # Most dashboard views require authentication, so each test starts with
+        # a logged-in analyst unless it is explicitly checking redirects.
         self.user = get_user_model().objects.create_user(
             username='analyst',
             password='strong-test-password',
@@ -25,6 +29,7 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_index_renders_nlp_dashboard(self):
+        # Empty feeds keep the test deterministic and avoid network requests.
         response = self.client.get(reverse('index'))
 
         self.assertEqual(response.status_code, 200)
@@ -36,6 +41,7 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_index_lists_news_alerts(self):
+        # A stored alert should appear in the dashboard's latest-alert section.
         NewsAlert.objects.create(
             keyword='ransomware',
             article_title='Ransomware campaign targets hospitals',
@@ -54,6 +60,7 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_index_shows_dashboard_charts(self):
+        # Multiple alert categories give the dashboard chart data to render.
         NewsAlert.objects.create(
             keyword='malware',
             article_title='Malware targets developers',
@@ -94,6 +101,7 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_analytics_page_shows_metrics(self):
+        # Repeated high-severity alerts should be visible in analytics metrics.
         NewsAlert.objects.create(
             keyword='malware',
             article_title='Malware targets developers',
@@ -119,6 +127,8 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_predictions_page_shows_gauge_and_prediction_details(self):
+        # Two high-severity alerts for the same keyword should become a high
+        # likelihood prediction.
         NewsAlert.objects.create(
             keyword='malware',
             article_title='Malware targets developers',
@@ -168,6 +178,7 @@ class ThreatIndexViewTests(TestCase):
 
     @override_settings(CYBER_NEWS_FEEDS=[])
     def test_category_page_lists_matching_alerts(self):
+        # The category page must include only alerts matching the URL keyword.
         NewsAlert.objects.create(
             keyword='malware',
             article_title='Malware targets developers',
@@ -192,6 +203,8 @@ class ThreatIndexViewTests(TestCase):
 
 
 class NewsNlpTests(TestCase):
+    """Keyword extraction and alert persistence coverage."""
+
     def test_extract_keywords_finds_important_terms(self):
         article = {
             'title': 'Ransomware gang exploits zero-day vulnerability',
@@ -205,6 +218,8 @@ class NewsNlpTests(TestCase):
         self.assertEqual(keywords['malware'], NewsAlert.SEVERITY_HIGH)
 
     def test_process_news_articles_saves_alerts_once(self):
+        # The same article can create one alert per matched keyword, but each
+        # keyword/article pair should remain unique across repeated processing.
         article = {
             'title': 'Phishing campaign steals credentials',
             'url': 'https://example.com/phishing',
@@ -225,6 +240,8 @@ class NewsNlpTests(TestCase):
 
 
 class NewsFeedParsingTests(TestCase):
+    """Feed summary cleanup coverage."""
+
     def test_clean_summary_removes_html_and_limits_length(self):
         raw_summary = '<p><strong>Summary</strong></p>' + (' vulnerability' * 80)
 

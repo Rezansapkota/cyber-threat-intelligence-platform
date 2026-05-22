@@ -13,7 +13,10 @@ from .nlp import extract_keywords, process_news_articles
 
 @login_required
 def index(request):
+    """Render the main dashboard with alert, keyword, and source totals."""
     news_alerts = NewsAlert.objects.all()
+    # Group stored alerts by keyword/source so templates can draw charts
+    # without doing database work.
     attack_stats = _chart_stats(
         news_alerts.values('keyword').annotate(count=Count('id')).order_by('-count'),
         'keyword',
@@ -39,7 +42,10 @@ def index(request):
 
 @login_required
 def news(request):
+    """Fetch current cybersecurity news and display extracted keywords."""
     articles, error = fetch_cybersecurity_news()
+    # Persist any matched keywords first, then attach keyword labels for the
+    # article cards rendered on this request.
     process_news_articles(articles)
     for article in articles:
         article['keywords'] = extract_keywords(article).keys()
@@ -57,6 +63,9 @@ def news(request):
 
 @login_required
 def category(request, category_slug):
+    """Show stored alerts for one keyword category."""
+    # Slugs are display-friendly URLs; convert them back before filtering the
+    # database because keywords may contain spaces or punctuation.
     keyword = _keyword_from_slug(category_slug)
     alerts = NewsAlert.objects.filter(keyword=keyword) if keyword else NewsAlert.objects.none()
     severity_stats = _chart_stats(
@@ -79,7 +88,9 @@ def category(request, category_slug):
 
 @login_required
 def analytics(request):
+    """Render chart data for attack, severity, and source analytics."""
     news_alerts = NewsAlert.objects.all()
+    # The analytics page uses the same grouped data in several chart formats.
     attack_stats = _chart_stats(
         news_alerts.values('keyword').annotate(count=Count('id')).order_by('-count'),
         'keyword',
@@ -111,7 +122,10 @@ def analytics(request):
 
 @login_required
 def predictions(request):
+    """Show simple attack risk predictions based on stored alert history."""
     news_alerts = NewsAlert.objects.all()
+    # Predictions are intentionally lightweight: they rank repeated/high
+    # severity mentions rather than trying to forecast from external data.
     predictions_data = _attack_predictions(news_alerts)
 
     return render(
@@ -127,7 +141,9 @@ def predictions(request):
 
 @login_required
 def news_feed(request):
+    """Return fetched cybersecurity news as JSON for lightweight clients."""
     articles, error = fetch_cybersecurity_news()
+    # Keep the database in sync even when news is fetched through JSON.
     process_news_articles(articles)
     return JsonResponse(
         {
@@ -138,7 +154,10 @@ def news_feed(request):
 
 
 def _chart_stats(rows, label_key):
+    """Convert grouped query rows into reusable chart percentages."""
     rows = list(rows)
+    # Percent values are relative to the largest group so bar charts scale
+    # cleanly even when total alert volume is small.
     largest = max([row['count'] for row in rows], default=0)
     stats = []
 
@@ -158,6 +177,8 @@ def _chart_stats(rows, label_key):
 
 
 def _category_links():
+    """Build keyword category links ordered by alert volume."""
+    # These links power the shared "Attack Categories" menu across pages.
     rows = (
         NewsAlert.objects.values('keyword')
         .annotate(count=Count('id'))
@@ -174,6 +195,9 @@ def _category_links():
 
 
 def _keyword_from_slug(category_slug):
+    """Resolve a URL slug back to its stored keyword value."""
+    # Compare slugified values so URLs remain stable for keywords like
+    # "data breach" and "zero-day".
     for keyword in NewsAlert.objects.values_list('keyword', flat=True).distinct():
         if slugify(keyword) == category_slug:
             return keyword
@@ -181,6 +205,7 @@ def _keyword_from_slug(category_slug):
 
 
 def _radar_labels(stats):
+    """Place labels around the SVG radar chart."""
     label_points = []
     count = len(stats)
     if not count:
@@ -199,6 +224,7 @@ def _radar_labels(stats):
 
 
 def _radar_points(stats):
+    """Build SVG polygon points for the radar chart."""
     count = len(stats)
     if not count:
         return ''
@@ -206,6 +232,8 @@ def _radar_points(stats):
     largest = max([stat['count'] for stat in stats], default=1)
     points = []
     for index, stat in enumerate(stats):
+        # Larger counts sit farther from the center, making stronger attack
+        # categories visually stand out.
         radius = 70 * (stat['count'] / largest)
         x, y = _radar_coordinate(index, count, radius)
         points.append(f'{x},{y}')
@@ -214,6 +242,7 @@ def _radar_points(stats):
 
 
 def _radar_coordinate(index, count, radius):
+    """Calculate one point on a centered radar chart circle."""
     angle = (2 * math.pi * index / count) - (math.pi / 2)
     x = round(100 + radius * math.cos(angle), 2)
     y = round(100 + radius * math.sin(angle), 2)
@@ -221,6 +250,7 @@ def _radar_coordinate(index, count, radius):
 
 
 def _pie_segments(stats):
+    """Convert top attack stats into colored pie chart segments."""
     total = sum(stat['count'] for stat in stats)
     if not total:
         return []
@@ -229,6 +259,7 @@ def _pie_segments(stats):
     start = 0
     segments = []
     for index, stat in enumerate(stats):
+        # SVG pie slices are described as start/end angles in degrees.
         degrees = round((stat['count'] / total) * 360, 2)
         end = start + degrees
         segments.append(
@@ -247,6 +278,9 @@ def _pie_segments(stats):
 
 
 def _attack_predictions(alerts):
+    """Rank attack types with a small severity-weighted scoring model."""
+    # Critical alerts contribute the most because they usually represent
+    # active exploitation or high-impact incidents.
     severity_weight = {
         NewsAlert.SEVERITY_CRITICAL: 3,
         NewsAlert.SEVERITY_HIGH: 2,
@@ -255,6 +289,7 @@ def _attack_predictions(alerts):
     scores = {}
 
     for alert in alerts:
+        # Accumulate one score bucket per attack keyword.
         scores.setdefault(
             alert.keyword,
             {
@@ -273,6 +308,7 @@ def _attack_predictions(alerts):
         if alert.severity == NewsAlert.SEVERITY_HIGH:
             scores[alert.keyword]['high'] += 1
 
+    # Sort by total score first, then use severe alert counts as tie-breakers.
     predictions = sorted(
         scores.values(),
         key=lambda item: (item['score'], item['critical'], item['high'], item['count']),
@@ -280,6 +316,7 @@ def _attack_predictions(alerts):
     )
 
     for prediction in predictions:
+        # Convert the numeric score into simple analyst-facing risk language.
         if prediction['critical']:
             prediction['risk'] = 'High'
             prediction['reason'] = 'Critical alerts are already present for this attack type.'
@@ -296,6 +333,7 @@ def _attack_predictions(alerts):
     predictions = predictions[:5]
     largest_score = max([prediction['score'] for prediction in predictions], default=1)
     for index, prediction in enumerate(predictions, start=1):
+        # Percent and ray index are presentation values used by the gauge UI.
         prediction['percent'] = round((prediction['score'] / largest_score) * 100)
         prediction['ray_index'] = index
 
