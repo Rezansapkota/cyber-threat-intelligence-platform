@@ -4,3 +4,5 @@ db.sqlite3
 .env
 .venv/
 venv/
+ngrok.exe
+ngrok.zip
